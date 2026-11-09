@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru"><head><meta charset="utf-8"><title>Hex Runes</title>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Hex Runes</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#0b0b16;font:13px system-ui,sans-serif;color:#e8e4ff}
 canvas{display:block}#g{position:fixed;inset:0;display:none;background:rgba(8,6,20,.82);cursor:crosshair}
@@ -22,6 +22,22 @@ h1{margin:0 0 14px;text-align:center;letter-spacing:3px;color:#d4c6ff;text-shado
 .card canvas{background:#0a0720;border-radius:6px;flex:none}.steps{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.steps div{text-align:center;font-size:10px;width:72px}
 code{background:#000a;padding:1px 5px;border-radius:4px;color:#ffd36b}.row{display:flex;justify-content:space-between;align-items:center;margin:10px 0;gap:12px}
 #flash{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:0;transition:opacity .5s}#hint{left:10px;bottom:10px;font-size:12px}
+
+body{touch-action:none;-webkit-user-select:none;user-select:none}.box{touch-action:pan-y}
+#spells{right:10px;top:46%;display:none}#stack,#spells{z-index:41}
+.sp{display:flex;gap:6px;align-items:center;padding:5px 8px;margin:3px 0;background:#1a1440;border:1px solid #5b4b9a;border-radius:7px;cursor:pointer}
+.sp b{color:#ffd36b}.sp small{opacity:.6}.sp .x{margin-left:auto;opacity:.6;padding:0 4px}
+#tc{display:none;position:fixed;inset:0;z-index:45;pointer-events:none}.touch #tc{display:block}#tc>*{pointer-events:auto}
+#joy{position:absolute;left:24px;bottom:24px;width:130px;height:130px;border-radius:50%;background:#ffffff14;border:2px solid #ffffff44}
+#knob{position:absolute;left:45px;top:45px;width:40px;height:40px;border-radius:50%;background:#9d8cffaa;transition:transform .05s}
+#tc button{position:absolute;width:60px;height:60px;border-radius:50%;border:2px solid #9d8cff;background:#2a2060cc;color:#fff;font-size:22px}
+#t-jump{right:24px;bottom:30px}#t-cast{right:94px;bottom:84px;background:#6a4fe0cc}
+#t-menu,#t-grim{top:10px;width:44px!important;height:44px!important;font-size:18px!important}#t-menu{left:10px}#t-grim{left:62px}
+@media (max-width:820px),(pointer:coarse){#help,#hint,#log{display:none}#stack{min-width:110px;font-size:11px}#bars{width:190px;bottom:8px}.touch #spells{top:34%}.touch .sp{padding:9px 10px;font-size:14px}}
+
+#blk{left:10px;bottom:48px;font-size:12px;cursor:pointer}#blk i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle}
+.touch #blk{left:50%;top:10px;bottom:auto;transform:translateX(-50%);font-size:0}.touch #blk i{width:26px;height:26px}
+#t-put{right:24px;bottom:100px}#t-brk{right:24px;bottom:170px}
 </style></head><body>
 <div id="cross"></div>
 <div id="help" class="p"><b>WASD</b> ходьба, <b>Пробел</b> прыжок, <b>F</b> руны (рисуй мышью по точкам)<br>
@@ -31,11 +47,14 @@ code{background:#000a;padding:1px 5px;border-radius:4px;color:#ffd36b}.row{displ
 <b>dq</b> Луч (точка, вектор) · <b>aaq</b> Взрыв (точка, мощность) · <b>dde</b> Импульс (цель, вектор) · <b>qqa</b> Свет (точка)<br>
 <b>Рывок:</b> qaq wa ww ed wd ed wd ed wd ee dde<br>
 <b>Взрыв:</b> qaq wq wa dq ww ed wd aaq<br><b>Esc</b> меню · <b>G</b> гримуар</div>
-<div id="stack" class="p"><b>Стек</b><div id="st">пусто</div></div>
+<div id="stack" class="p"><b id="sth">Стек</b><div id="st">пусто</div></div>
 <div id="toast" class="p"></div><div id="log" class="p"></div>
 <div id="bars" class="p">❤<div class="bar"><i id="hp" style="background:#e55;width:100%"></i></div>
 ✦ медиа<div class="bar"><i id="mn" style="background:#6af;width:100%"></i></div></div>
 <div id="hint" class="p" style="cursor:pointer" onclick="showPage('m-pause','')">☰ Esc меню · G гримуар · F руны</div><div id="flash"></div>
+<div id="spells" class="p"><b>Заклинания</b> <small>(цифры 1–9)</small><div id="spl"></div></div>
+<div id="blk" class="p" onclick="setCur(cur+1)">🧱 <i id="sw"></i> ЛКМ блок · ПКМ убрать · колесо/Z X цвет</div>
+<div id="tc"><div id="joy"><i id="knob"></i></div><button id="t-put">🧱</button><button id="t-brk">⛏</button><button id="t-jump">⤒</button><button id="t-cast">✦</button><button id="t-menu">☰</button><button id="t-grim">📖</button></div>
 <div id="ov" class="ov"><div class="box">
 <div id="m-main" class="pg"><h1>✦ HEX RUNES ✦</h1><input id="nm" type="text" maxlength="16" placeholder="Имя мага"><button id="b-play">Играть</button><button data-go="m-grim">Гримуар</button><button data-go="m-opt">Настройки</button><button data-go="m-ctl">Управление</button></div>
 <div id="m-pause" class="pg"><h1>Пауза</h1><button id="b-res">Продолжить</button><button data-go="m-grim">Гримуар</button><button data-go="m-opt">Настройки</button><button data-go="m-ctl">Управление</button><button onclick="location.reload()">Перезайти</button></div>
@@ -75,7 +94,7 @@ function mkPlayer(p){const g=new THREE.Group(),m=new THREE.MeshLambertMaterial({
   g.add(b,h,n,label(p.n));S.add(g);return g}
 // ---- state ----
 const me={p:new THREE.Vector3(0,1.6,0),v:new THREE.Vector3(),yaw:0,pt:0,ground:true};const keys={};
-addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;keys[e.code]=true;if(e.code==='KeyF'&&myId!==null&&!ui)toggleCast();if(e.code==='KeyG'&&playing){ui==='m-grim'?backUI():ui?0:showPage('m-grim','')}if(e.code==='Escape'&&ui&&ui!=='m-main'&&ui!=='m-pause')backUI()});addEventListener('keyup',e=>keys[e.code]=false);
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;keys[e.code]=true;if(e.code==='KeyF'&&myId!==null&&!ui)toggleCast();if(/^Digit[1-9]$/.test(e.code)&&playing)runSpell(+e.code[5]-1);if(e.code==='KeyZ'&&playing&&!ui)setCur(cur-1);if(e.code==='KeyX'&&playing&&!ui)setCur(cur+1);if(e.code==='KeyG'&&playing){ui==='m-grim'?backUI():ui?0:showPage('m-grim','')}if(e.code==='Escape'&&ui&&ui!=='m-main'&&ui!=='m-pause')backUI()});addEventListener('keyup',e=>keys[e.code]=false);
 R.domElement.addEventListener('click',()=>{if(!casting)R.domElement.requestPointerLock()});
 addEventListener('mousemove',e=>{if(document.pointerLockElement){me.yaw-=e.movementX*.0025*opt.sens;me.pt=Math.max(-1.5,Math.min(1.5,me.pt-e.movementY*.0025*opt.sens))}});
 addEventListener('resize',()=>{R.setSize(innerWidth,innerHeight);C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix();G.width=innerWidth;G.height=innerHeight});
@@ -85,21 +104,24 @@ function onMsg(ev){const m=JSON.parse(ev.data);
   if(m.t==='init'){myId=m.id;me.p.set(...m.pos)}
   else if(m.t==='resp'){me.p.set(...m.pos);me.v.set(0,0,0);toast('Вы погибли и возродились',1);flash('#a00');snd.bad()}
   else if(m.t==='imp'){me.v.add(new THREE.Vector3(...m.v));me.ground=false;snd.whoosh();burst([me.p.x,me.p.y-1,me.p.z],40,0x9de0ff,3,.7,0);shake=Math.max(shake,.05)}
+  else if(m.t==='tp'){me.p.set(m.pos[0],m.pos[1],m.pos[2]);me.v.set(0,0,0);burst([m.pos[0],m.pos[1]-.5,m.pos[2]],40,0xb9a8ff,3,.8,0);snd.whoosh()}
+  else if(m.t==='bs'){m.l.forEach(([x,y,z,c])=>{const k=x+','+y+','+z;c?blocks.set(k,c):blocks.delete(k)});bdirty=true;
+    if(m.l.length<30){const b=m.l[0];snd.place();burst([b[0]+.5,b[1]+.5,b[2]+.5],14,b[3]?0xffffff:0x999999,2,.5,3)}}
   else if(m.t==='msg')logm(m.m);
   else if(m.t==='s'){if(m.hp<lastHp-.5){flash('#c00');snd.hurt()}lastHp=m.hp;$('hp').style.width=Math.max(0,m.hp)+'%';$('mn').style.width=m.mana+'%';const seen=new Set();
     m.ps.forEach(p=>{if(p.id===myId)return;seen.add(p.id);let o=others.get(p.id);if(!o){o={g:mkPlayer(p),t:new THREE.Vector3(...p.p),y:0};others.set(p.id,o);o.g.position.set(p.p[0],p.p[1]-1.6,p.p[2])}
       o.t.set(...p.p);o.y=p.y});
     others.forEach((o,id)=>{if(!seen.has(id)){S.remove(o.g);others.delete(id)}})}
   else if(m.t==='cast'){$('st').innerHTML=m.stack.length?m.stack.map((x,i)=>(m.stack.length-i)+'. '+x).reverse().reverse().join('<br>'):'пусто';
-    toast(m.ok?'✓ '+m.n:'✗ Мишап ('+m.n+'): '+m.err,!m.ok);if(m.n!=='Сессия закрыта')m.ok?snd.ok():snd.bad()}
-  else if(m.t==='fx'){if(m.k==='cast'){const oo=others.get(m.id),o=m.id===myId?me.p:(oo&&oo.g.position);if(o){ring(o,m.ok?0x9d8cff:0xff4040);burst([o.x,1.2,o.z],30,m.ok?0xb9a8ff:0xff6060,2.5,.8,-1)}}else if(m.k==='boom'){boomFx(m.p,m.r);const s=new THREE.Mesh(new THREE.SphereGeometry(1,16,12),new THREE.MeshBasicMaterial({color:0xff8a30,transparent:true,opacity:.8}));
+    if(m.spells)setSpells(m.spells);recording=!!m.rec;$('sth').textContent=recording?'Стек · ● запись':'Стек';if(!m.quiet){toast(m.ok?'✓ '+m.n:'✗ Мишап ('+m.n+'): '+m.err,!m.ok);m.ok?snd.ok():snd.bad()}if(m.fired&&m.ok&&casting)setTimeout(()=>{if(casting)toggleCast()},350)}
+  else if(m.t==='fx'){if(m.k==='cast'){const oo=others.get(m.id),o=m.id===myId?me.p:(oo&&oo.g.position);if(o){ring(o,m.ok?0x9d8cff:0xff4040);burst([o.x,1.2,o.z],30,m.ok?0xb9a8ff:0xff6060,2.5,.8,-1)}}else if(m.k==='heal'){burst(m.p,40,0x66ff88,2,1,-1);snd.ok()}else if(m.k==='bolt'){bolt(m.p)}else if(m.k==='boom'){boomFx(m.p,m.r);const s=new THREE.Mesh(new THREE.SphereGeometry(1,16,12),new THREE.MeshBasicMaterial({color:0xff8a30,transparent:true,opacity:.8}));
       s.position.set(...m.p);S.add(s);fxs.push({s,r:m.r,t:0,boom:1})}
     else{const s=new THREE.Mesh(new THREE.SphereGeometry(.3,10,10),new THREE.MeshBasicMaterial({color:0xfff2b0}));s.position.set(...m.p);S.add(s);
       burst(m.p,25,0xfff2b0,3,.9,0);snd.sparkle();const L=lights[li++%3];L.l.position.set(...m.p);L.l.intensity=1.4;L.t=30;fxs.push({s,t:30,boom:0})}}};
 setInterval(()=>{if(ws&&ws.readyState===1&&myId!==null)ws.send(JSON.stringify({t:'m',p:[me.p.x,me.p.y,me.p.z],y:me.yaw,pt:me.pt}))},50);
 // ---- rune grid ----
 const G=$('g'),gx=G.getContext('2d');G.width=innerWidth;G.height=innerHeight;
-const SZ=48,DIRS=[[1,0],[0,1],[-1,1],[-1,0],[0,-1],[1,-1]],pts=[];
+let SZ=Math.min(48,innerWidth/11,innerHeight/10),DIRS=[[1,0],[0,1],[-1,1],[-1,0],[0,-1],[1,-1]],pts=[];
 for(let q=-3;q<=3;q++)for(let r=-3;r<=3;r++)if(Math.abs(q+r)<=3)pts.push({q,r});
 const pp=p=>({x:G.width/2+SZ*Math.sqrt(3)*(p.q+p.r/2),y:G.height/2+SZ*1.5*p.r});
 let path=[],used=new Set(),mouse={x:0,y:0};
@@ -114,6 +136,10 @@ G.onmouseup=()=>{if(path.length>=2){const ds=[];for(let i=1;i<path.length;i++){c
     let s='';for(let i=1;i<ds.length;i++)s+='wedsaq'[(ds[i]-ds[i-1]+6)%6];ws.send(JSON.stringify({t:'pat',p:s}))}
   path=[];used.clear()};
 function drawGrid(){if(!casting)return;gx.clearRect(0,0,G.width,G.height);
+  if(recording){const t=performance.now()/400,cx=G.width/2,cy=G.height/2,r0=SZ*5.4+Math.sin(t)*4,gr=gx.createRadialGradient(cx,cy,r0*.6,cx,cy,r0);
+    gr.addColorStop(0,'#3a7bff00');gr.addColorStop(1,'#6fa8ff55');gx.fillStyle=gr;gx.beginPath();gx.arc(cx,cy,r0,0,6.3);gx.fill();
+    gx.strokeStyle='#8fc1ff';gx.lineWidth=3;gx.shadowColor='#5aa0ff';gx.shadowBlur=20;gx.stroke();gx.shadowBlur=0;
+    gx.fillStyle='#bcd8ff';gx.font='16px sans-serif';gx.textAlign='center';gx.fillText('● Запись заклинания: eee завершит',cx,Math.max(18,cy-r0-10))}
   pts.forEach(p=>{const c=pp(p);gx.fillStyle='#9d8cff';gx.beginPath();gx.arc(c.x,c.y,5,0,6.3);gx.fill()});
   if(path.length){gx.strokeStyle='#ffd36b';gx.lineWidth=5;gx.shadowColor='#ffb02e';gx.shadowBlur=14;gx.lineCap='round';gx.beginPath();
     path.forEach((p,i)=>{const c=pp(p);i?gx.lineTo(c.x,c.y):gx.moveTo(c.x,c.y)});const l=pp(path[path.length-1]);gx.lineTo(mouse.x,mouse.y);gx.stroke();gx.shadowBlur=0}}
@@ -145,6 +171,7 @@ function boomFx(p,r){burst(p,150,0xff8a30,r*3.5,.9,6);burst(p,60,0xffe0a0,r*5,.5
   const d=me.p.distanceTo(new THREE.Vector3(...p));snd.boom(1/(1+d/15));shake=Math.max(shake,Math.min(.5,r*.15/(1+d/8)));if(d<r){flash('#fb5')}}
 function flash(c){const f=$('flash');f.style.transition='none';f.style.background=c;f.style.opacity=.45;requestAnimationFrame(()=>requestAnimationFrame(()=>{f.style.transition='opacity .5s';f.style.opacity=0}))}
 function updFx(dt){
+  if(bdirty){bdirty=false;rebuild()}
   for(let i=rings.length-1;i>=0;i--){const r=rings[i];r.t+=dt;const u=r.t/.9;r.m.scale.setScalar(1+u*5);r.m.material.opacity=.9*(1-u);if(u>=1){S.remove(r.m);rings.splice(i,1)}}
   if(playing&&Math.random()<.5)burst([me.p.x+(Math.random()-.5)*30,Math.random()*6,me.p.z+(Math.random()-.5)*30],1,0x8a7bff,.3,5,-.05);
   for(let i=parts.length-1;i>=0;i--){const q=parts[i];q.l-=dt;if(q.l<=0){parts.splice(i,1);continue}q.v.y-=q.g*dt;q.p.addScaledVector(q.v,dt)}
@@ -166,15 +193,30 @@ const PATS=[
 'dq|Луч|точка, вектор → точка|Точка, где луч из точки по вектору упрётся в землю (до 40).',
 'aaq|Взрыв|точка, мощность →|Мощность 0.5–4, медиа 15×мощность, радиус 2+1.5×мощность. Бьёт и толкает.',
 'dde|Импульс|сущность, вектор →|Толкает сущность. Медиа 5+длина вектора (макс. 30).',
-'qqa|Свет|точка →|Светящийся шар на 30 секунд. 5 медиа.'];
+'qqa|Свет|точка →|Светящийся шар на 30 секунд. 5 медиа.',
+'qqq|Интроспекция|начало записи|Всё, что нарисуете дальше, записывается в заклинание, а не исполняется. Окно не закроется.',
+'eee|Ретроспекция|конец записи|Завершает запись. Заклинание появится справа с номером 1–9.',
+'wwd|Число 3|→ число|Кладёт 3.','wwe|Число 5|→ число|Кладёт 5.','wwa|Число 10|→ число|Кладёт 10.',
+'ae|Вычитание|a b → a−b|Числа или векторы.','qd|Отрицание|a → −a|Меняет знак числа или вектора.','wed|Вверх|→ вектор|Вектор (0,1,0). С qd получите «вниз».',
+'qwq|Ближайший маг|→ сущность|Ближайший другой игрок (ошибка, если никого).','aqa|Лечение|сущность →|+25 здоровья, 15 медиа, дальность 40.',
+'qwa|Молния|точка →|25 медиа. Урон рядом с точкой, ломает блок.','dwd|Телепорт|точка →|Переносит вас в точку. Медиа 10+0.4×расстояние.',
+'eqe|Блок|точка, цвет →|Ставит блок в клетке точки. Цвет 1–8, 0 стирает. 2 медиа.','eeq|Куб|точка, размер, цвет →|Куб размера 1–7 вокруг точки, цвет 0 стирает. Медиа 0.25×размер³.'];
 const NM={};PATS.forEach(x=>{const a=x.split('|');NM[a[0]]=a[1]});
 const SPELLS=[
 ['Рывок вперёд','Вы толкаете себя вдоль взгляда с силой 8.','qaq wa ww ed wd ed wd ed wd ee dde'],
 ['Взрыв в точке взгляда','Луч до земли, затем взрыв мощности 2. Стоит 30 медиа.','qaq wq wa dq ww ed wd aaq'],
 ['Мощный взрыв','Та же цепочка, но мощность 4 (60 медиа).','qaq wq wa dq ww ed wd ed wd aaq'],
 ['Ракетный прыжок','Взрыв под собой подбрасывает вас, но и ранит.','qaq wq ww ed wd aaq'],
-['Светляк','Ставит светящийся шар туда, куда вы смотрите.','qaq wq wa dq qqa']];
-const HOW='<div class="card"><div><b>Как читать узоры.</b> Узор — линия по точкам сетки. Каждый поворот записывается буквой: <code>w</code> прямо, <code>e</code> вправо на 60°, <code>d</code> вправо на 120°, <code>q</code> влево на 60°, <code>a</code> влево на 120°. Направление первой линии неважно.<br><br><b>Стек.</b> Узоры исполняются сразу и работают со стеком значений (справа в игре). Действия забирают значения из стека.<br><br><b>Медиа.</b> Заклинания расходуют медиа, оно восстанавливается само. <b>Мишап</b> (ошибка, нехватка медиа, цель дальше 40) очищает стек и отнимает 10 медиа.<br><br>Сначала подготовьте значения, затем примените действие.</div></div>';
+['Светляк','Ставит светящийся шар туда, куда вы смотрите.','qaq wq wa dq qqa'],
+['Своё заклинание (сфера записи)','qqq начинает запись, дальше узоры записываются, eee завершает. Вызов цифрой или касанием справа.','qqq qaq wa ww ed wd ed wd ed wd ee dde eee'],
+['Красный блок в точке взгляда','Луч, число 2 (красный), блок.','qaq wq wa dq ww ed wd eqe'],
+['Куб 5×5×5','Серый куб там, куда смотрите. 32 медиа.','qaq wq wa dq wwe ww eeq'],
+['Стереть куб','Цвет 0 (1−1) стирает всё в кубе 5×5×5.','qaq wq wa dq wwe ww ww ae eeq'],
+['Телепорт к точке взгляда','Переносит вас туда, куда смотрите.','qaq wq wa dq dwd'],
+['Молния','Удар в точке взгляда.','qaq wq wa dq qwa'],
+['Лечение себя','+25 здоровья.','qaq aqa'],
+['Отбросить ближайшего','Толкает ближайшего игрока вдоль взгляда.','qwq wa wwe ee dde']];
+const HOW='<div class="card"><div><b>Как читать узоры.</b> Узор — линия по точкам сетки. Каждый поворот записывается буквой: <code>w</code> прямо, <code>e</code> вправо на 60°, <code>d</code> вправо на 120°, <code>q</code> влево на 60°, <code>a</code> влево на 120°. Направление первой линии неважно.<br><br><b>Стек.</b> Узоры исполняются сразу и работают со стеком значений (справа в игре). Действия забирают значения из стека.<br><br><b>Медиа.</b> Заклинания расходуют медиа, оно восстанавливается само. <b>Мишап</b> (ошибка, нехватка медиа, цель дальше 40) очищает стек и отнимает 10 медиа.<br><br>Сначала подготовьте значения, затем примените действие. Окно рун закрывается само после сработавшего действия.<br><br><b>Своё заклинание.</b> Нарисуйте <code>qqq</code>, затем любые узоры (они записываются), в конце <code>eee</code>. Заклинание появится справа с номером; вызывайте его цифрой 1–9 или касанием. ✕ удаляет.<br><br><b>Стройка.</b> ЛКМ ставит блок, ПКМ убирает, колесо или Z/X меняют цвет. Магией: <code>eqe</code> блок, <code>eeq</code> куб (цвет 0 стирает). Взрывы разрушают блоки. Мир остаётся прежним, блоки лежат поверх.</div></div>';
 function mini(code,w=84,h=64){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d'),tn={w:0,e:1,d:2,s:3,a:4,q:5};let d=0,px=1,py=0;const P=[[0,0],[1,0]];
   for(const ch of code){d=(d+tn[ch])%6;px+=Math.cos(d*Math.PI/3);py+=Math.sin(d*Math.PI/3);P.push([px,py])}
   const xs=P.map(p=>p[0]),ys=P.map(p=>p[1]),a=Math.min(...xs),b=Math.max(...xs),c2=Math.min(...ys),e=Math.max(...ys);
@@ -205,16 +247,66 @@ $('o-sens').oninput=e=>{opt.sens=e.target.value/100;sv()};
 $('o-fx').onchange=e=>{opt.fx=e.target.checked;sv()};
 $('o-mus').onchange=e=>{opt.music=e.target.checked;if(amb)amb.g.gain.value=opt.music?.04:0;sv()};
 $('o-menu').checked=opt.menu;$('o-menu').onchange=e=>{opt.menu=e.target.checked;sv()};R.domElement.addEventListener('click',()=>{if(playing){ac();ambient()}});if(opt.menu)showPage('m-main','');else{name=(prompt('Имя мага?')||'Маг').slice(0,16);playing=true;connect()}
+// ---- spells & mobile ----
+let spellsList=[],recording=false;const stick={x:0,y:0},EFF=['aaq','dde','qqa','aqa','qwa','dwd','eqe','eeq'],cv=R.domElement;
+function setSpells(l){spellsList=l;const b=$('spl');b.innerHTML='';
+  l.forEach((sp,i)=>{const e=[...sp].reverse().find(c=>EFF.includes(c)),d=document.createElement('div');d.className='sp';
+    d.innerHTML='<b>'+(i+1)+'</b> '+(e?NM[e]:'Заклинание')+' <small>×'+sp.length+'</small><span class="x">✕</span>';
+    d.onclick=()=>runSpell(i);d.querySelector('.x').onclick=ev=>{ev.stopPropagation();ws.send(JSON.stringify({t:'del',i}))};b.append(d)});
+  $('spells').style.display=l.length?'block':'none'}
+function runSpell(i){if(spellsList[i]&&!casting&&!ui&&ws&&ws.readyState===1)ws.send(JSON.stringify({t:'run',i}))}
+addEventListener('resize',()=>{SZ=Math.min(48,innerWidth/11,innerHeight/10)});
+if(!cv.requestPointerLock)cv.requestPointerLock=()=>{};if(!document.exitPointerLock)document.exitPointerLock=()=>{};
+R.setPixelRatio(Math.min(devicePixelRatio,2));
+if(matchMedia('(pointer:coarse)').matches||/Android|iPhone|iPad/i.test(navigator.userAgent)){
+  document.body.classList.add('touch');let lookId=null,lx=0,ly=0,jid=null;
+  cv.addEventListener('touchstart',e=>{e.preventDefault();if(casting||ui)return;const t=e.changedTouches[0];lookId=t.identifier;lx=t.clientX;ly=t.clientY},{passive:false});
+  cv.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches)if(t.identifier===lookId){me.yaw-=(t.clientX-lx)*.005*opt.sens;me.pt=Math.max(-1.5,Math.min(1.5,me.pt-(t.clientY-ly)*.005*opt.sens));lx=t.clientX;ly=t.clientY}},{passive:false});
+  cv.addEventListener('touchend',e=>{for(const t of e.changedTouches)if(t.identifier===lookId)lookId=null});
+  const joy=$('joy'),knob=$('knob'),jm=t=>{const r=joy.getBoundingClientRect();let dx=(t.clientX-r.left-r.width/2)/(r.width/2),dy=(t.clientY-r.top-r.height/2)/(r.height/2);const l=Math.hypot(dx,dy);if(l>1){dx/=l;dy/=l}
+    stick.x=Math.abs(dx)>.25?dx:0;stick.y=Math.abs(dy)>.25?dy:0;knob.style.transform='translate('+dx*35+'px,'+dy*35+'px)'};
+  joy.addEventListener('touchstart',e=>{e.preventDefault();const t=e.changedTouches[0];jid=t.identifier;jm(t)},{passive:false});
+  joy.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches)if(t.identifier===jid)jm(t)},{passive:false});
+  const je=e=>{for(const t of e.changedTouches)if(t.identifier===jid){jid=null;stick.x=stick.y=0;knob.style.transform=''}};joy.addEventListener('touchend',je);joy.addEventListener('touchcancel',je);
+  const bind=(id,f)=>$(id).addEventListener('pointerdown',e=>{e.preventDefault();f()});
+  bind('t-cast',()=>{if(myId!==null&&!ui)toggleCast()});bind('t-put',()=>build(false));bind('t-brk',()=>build(true));bind('t-menu',()=>showPage('m-pause',''));bind('t-grim',()=>showPage('m-grim',''));
+  bind('t-jump',()=>keys.Space=true);['pointerup','pointercancel','pointerleave'].forEach(n=>$('t-jump').addEventListener(n,()=>keys.Space=false));
+  const tg=f=>e=>{e.preventDefault();const t=e.touches[0]||e.changedTouches[0];f({clientX:t.clientX,clientY:t.clientY})};
+  G.addEventListener('touchstart',tg(e=>G.onmousedown(e)),{passive:false});G.addEventListener('touchmove',tg(e=>G.onmousemove(e)),{passive:false});
+  G.addEventListener('touchend',e=>{e.preventDefault();G.onmouseup()},{passive:false})}
+// ---- blocks ----
+const PAL=['#000','#d0d0d0','#e05050','#e0a040','#e0e050','#50c060','#40b0e0','#7060e0','#d060c0'],blocks=new Map(),MAXB=5000;let cur=1,bdirty=false,landed=false;
+const bc=document.createElement('canvas');bc.width=bc.height=32;{const x=bc.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,32,32);x.strokeStyle='#777';x.lineWidth=3;x.strokeRect(0,0,32,32)}
+const bt=new THREE.CanvasTexture(bc);bt.magFilter=THREE.NearestFilter;
+const im=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({map:bt}),MAXB);im.count=0;im.frustumCulled=false;S.add(im);
+function rebuild(){let i=0;const m=new THREE.Matrix4(),c=new THREE.Color();blocks.forEach((col,k)=>{if(i>=MAXB)return;const a=k.split(',');m.setPosition(+a[0]+.5,+a[1]+.5,+a[2]+.5);im.setMatrixAt(i,m);im.setColorAt(i,c.set(PAL[col]));i++});
+  im.count=i;im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true}
+function setCur(n){cur=((n-1)%8+8)%8+1;$('sw').style.background=PAL[cur]}setCur(1);
+function hit(){const f=me.p.y-1.6,r=.3;for(let x=Math.floor(me.p.x-r);x<=Math.floor(me.p.x+r);x++)for(let y=Math.floor(f);y<=Math.floor(f+1.79);y++)for(let z=Math.floor(me.p.z-r);z<=Math.floor(me.p.z+r);z++)if(blocks.has(x+','+y+','+z))return true;return false}
+function phys(dt){landed=false;if(blocks.size){let n=0;while(hit()&&n++<20)me.p.y+=.5}
+  for(const a of['x','z']){const d=me.v[a]*dt;me.p[a]+=d;if(blocks.size&&hit()){me.p[a]-=d;me.v[a]=0}}
+  const dy=me.v.y*dt;me.p.y+=dy;if(blocks.size&&hit()){me.p.y-=dy;if(me.v.y<0)landed=true;me.v.y=0}}
+function aim(){const d=new THREE.Vector3();C.getWorldDirection(d);let pc=null;
+  for(let t=0;t<9;t+=.05){const x=C.position.x+d.x*t,y=C.position.y+d.y*t,z=C.position.z+d.z*t,k=[Math.floor(x),Math.floor(y),Math.floor(z)];if(y<0||blocks.has(k.join()))return{hit:k,prev:pc};pc=k}return null}
+function build(brk){if(casting||ui||myId===null)return;const a=aim();if(!a)return;const t=brk?a.hit:a.prev;if(!t)return;if(brk&&!blocks.has(t.join()))return;
+  if(!brk){const f=me.p.y-1.6;if(t[0]+1>me.p.x-.35&&t[0]<me.p.x+.35&&t[2]+1>me.p.z-.35&&t[2]<me.p.z+.35&&t[1]+1>f&&t[1]<f+1.8)return}
+  ws.send(JSON.stringify({t:'b',x:t[0],y:t[1],z:t[2],c:brk?0:cur}))}
+addEventListener('mousedown',e=>{if(document.pointerLockElement)build(e.button===2)});addEventListener('contextmenu',e=>e.preventDefault());
+addEventListener('wheel',e=>{if(document.pointerLockElement)setCur(cur+(e.deltaY>0?1:-1))});
+snd.zap=()=>{noise(.5,.5,5000,200);tone(1800,.25,'sawtooth',.15,150)};snd.place=()=>tone(180,.08,'square',.1,120);
+function bolt(p){burst(p,60,0xbfe0ff,4,.6,3);flash('#cdf');snd.zap();const pts=[];
+  for(let i=0;i<=8;i++)pts.push(new THREE.Vector3(p[0]+(i<8?(Math.random()-.5)*2:0),p[1]+30-i*30/8,p[2]+(i<8?(Math.random()-.5)*2:0)));
+  const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0xcfe6ff}));S.add(l);setTimeout(()=>S.remove(l),250)}
 // ---- loop ----
 let T=performance.now();
 (function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-T)/1000);T=n;
-  let fx=0,fz=0;if(!casting&&!ui&&playing){if(keys.KeyW)fz--;if(keys.KeyS)fz++;if(keys.KeyA)fx--;if(keys.KeyD)fx++}
+  let fx=0,fz=0;if(!casting&&!ui&&playing){if(keys.KeyW)fz--;if(keys.KeyS)fz++;if(keys.KeyA)fx--;if(keys.KeyD)fx++;fx+=stick.x;fz+=stick.y}
   const l=Math.hypot(fx,fz)||1,s=Math.sin(me.yaw),c=Math.cos(me.yaw);
   const tx=(fx*c+fz*s)/l*7,tz=(-fx*s+fz*c)/l*7,k=Math.min(1,(me.ground?12:.8)*dt);
   me.v.x+=(tx-me.v.x)*k;me.v.z+=(tz-me.v.z)*k;
   if(keys.Space&&me.ground&&!casting&&!ui&&playing){me.v.y=9;me.ground=false;snd.jump()}
-  me.v.y-=25*dt;me.p.addScaledVector(me.v,dt);
-  if(me.p.y<=1.6){me.p.y=1.6;if(me.v.y<0)me.v.y=0;me.ground=true}else me.ground=false;
+  me.v.y-=25*dt;phys(dt);
+  if(me.p.y<=1.6){me.p.y=1.6;if(me.v.y<0)me.v.y=0;me.ground=true}else me.ground=landed;
   pillars.forEach(q=>{const dx=me.p.x-q.x,dz=me.p.z-q.z,d=Math.hypot(dx,dz);if(d<q.r+.4&&me.p.y<9){me.p.x=q.x+dx/d*(q.r+.4);me.p.z=q.z+dz/d*(q.r+.4)}});
   me.p.x=Math.max(-95,Math.min(95,me.p.x));me.p.z=Math.max(-95,Math.min(95,me.p.z));
   C.position.copy(me.p);C.rotation.set(me.pt,me.yaw,0);
