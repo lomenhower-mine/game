@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Hex Runes</title>
+<html lang="ru"><head><meta charset="utf-8"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Hex Runes</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#0b0b16;font:13px system-ui,sans-serif;color:#e8e4ff}
 canvas{display:block}#g{position:fixed;inset:0;display:none;background:rgba(8,6,20,.82);cursor:crosshair}
@@ -38,6 +38,12 @@ body{touch-action:none;-webkit-user-select:none;user-select:none}.box{touch-acti
 #blk{left:10px;bottom:48px;font-size:12px;cursor:pointer}#blk i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle}
 .touch #blk{left:50%;top:10px;bottom:auto;transform:translateX(-50%);font-size:0}.touch #blk i{width:26px;height:26px}
 #t-put{right:24px;bottom:100px}#t-brk{right:24px;bottom:170px}
+
+html,body{overscroll-behavior:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+#t-full{left:114px;top:10px;width:44px!important;height:44px!important;font-size:18px!important}
+#rot{display:none;position:fixed;inset:0;z-index:60;background:#05030fee;color:#fff;align-items:center;justify-content:center;text-align:center;font-size:20px;line-height:1.6}
+@media (orientation:portrait){.touch #rot{display:flex}}
+select{background:#0a0720;color:#fff;border:1px solid #7a68e0;border-radius:6px;padding:4px}
 </style></head><body>
 <div id="cross"></div>
 <div id="help" class="p"><b>WASD</b> ходьба, <b>Пробел</b> прыжок, <b>F</b> руны (рисуй мышью по точкам)<br>
@@ -54,20 +60,21 @@ body{touch-action:none;-webkit-user-select:none;user-select:none}.box{touch-acti
 <div id="hint" class="p" style="cursor:pointer" onclick="showPage('m-pause','')">☰ Esc меню · G гримуар · F руны</div><div id="flash"></div>
 <div id="spells" class="p"><b>Заклинания</b> <small>(цифры 1–9)</small><div id="spl"></div></div>
 <div id="blk" class="p" onclick="setCur(cur+1)">🧱 <i id="sw"></i> ЛКМ блок · ПКМ убрать · колесо/Z X цвет</div>
-<div id="tc"><div id="joy"><i id="knob"></i></div><button id="t-put">🧱</button><button id="t-brk">⛏</button><button id="t-jump">⤒</button><button id="t-cast">✦</button><button id="t-menu">☰</button><button id="t-grim">📖</button></div>
+<div id="rot" onclick="this.style.display='none'">📱 ↻<br>Поверните телефон горизонтально<br><small>(нажмите, чтобы закрыть)</small></div>
+<div id="tc"><div id="joy"><i id="knob"></i></div><button id="t-full">⛶</button><button id="t-put">🧱</button><button id="t-brk">⛏</button><button id="t-jump">⤒</button><button id="t-cast">✦</button><button id="t-menu">☰</button><button id="t-grim">📖</button></div>
 <div id="ov" class="ov"><div class="box">
 <div id="m-main" class="pg"><h1>✦ HEX RUNES ✦</h1><input id="nm" type="text" maxlength="16" placeholder="Имя мага"><button id="b-play">Играть</button><button data-go="m-grim">Гримуар</button><button data-go="m-opt">Настройки</button><button data-go="m-ctl">Управление</button></div>
 <div id="m-pause" class="pg"><h1>Пауза</h1><button id="b-res">Продолжить</button><button data-go="m-grim">Гримуар</button><button data-go="m-opt">Настройки</button><button data-go="m-ctl">Управление</button><button onclick="location.reload()">Перезайти</button></div>
 <div id="m-opt" class="pg"><h1>Настройки</h1><div class="row">Громкость<input id="o-vol" type="range" min="0" max="100"></div><div class="row">Чувствительность мыши<input id="o-sens" type="range" min="30" max="250"></div>
-<div class="row">Частицы и эффекты<input id="o-fx" type="checkbox"></div><div class="row">Фоновая музыка<input id="o-mus" type="checkbox"></div><div class="row">Стартовое меню (со следующего запуска)<input id="o-menu" type="checkbox"></div><button data-back>Назад</button></div>
-<div id="m-ctl" class="pg"><h1>Управление</h1><div class="card"><div><b>WASD</b> ходьба · <b>Пробел</b> прыжок · <b>Мышь</b> обзор<br><b>F</b> открыть/закрыть руны (рисуйте зажав мышь по точкам)<br><b>G</b> гримуар · <b>Esc</b> меню паузы<br>Закрытие рун сбрасывает стек.</div></div><button data-back>Назад</button></div>
+<div class="row">Частицы и эффекты<input id="o-fx" type="checkbox"></div><div class="row">Фоновая музыка<input id="o-mus" type="checkbox"></div><div class="row">Стартовое меню (со следующего запуска)<input id="o-menu" type="checkbox"></div><div class="row">Сенсорное управление<select id="o-touch"><option value="auto">Авто</option><option value="on">Вкл</option><option value="off">Выкл</option></select></div><button data-back>Назад</button></div>
+<div id="m-ctl" class="pg"><h1>Управление</h1><div class="card"><div><b>WASD</b> ходьба · <b>Пробел</b> прыжок · <b>Мышь</b> обзор<br><b>F</b> открыть/закрыть руны (рисуйте зажав мышь по точкам)<br><b>G</b> гримуар · <b>Esc</b> меню паузы<br>Закрытие рун сбрасывает стек.<br><b>ЛКМ/ПКМ</b> поставить/убрать блок · колесо или <b>Z/X</b> цвет · <b>1–9</b> заклинания.<br><br><b>Телефон:</b> левый джойстик — ходьба, свайп справа — обзор, ⤒ прыжок, ✦ руны, 🧱/⛏ блок (удерживайте — повтор), ⛶ полный экран, тап по списку заклинаний справа — вызов.</div></div><button data-back>Назад</button></div>
 <div id="m-grim" class="pg wide"><h1>Гримуар</h1><div class="tabs"><button data-tab="how">Основы</button><button data-tab="pats">Узоры</button><button data-tab="spells">Заклинания</button></div><div id="gb"></div><button data-back>Назад</button></div>
 </div></div>
 <canvas id="g"></canvas>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 let name='Маг',playing=false,ui=null,prevUI='',shake=0,lastHp=100,o0={};try{o0=JSON.parse(localStorage.getItem('hr_opt')||'{}')}catch{}
-const opt=Object.assign({vol:.6,sens:1,fx:true,music:true,menu:true},o0);
+const opt=Object.assign({vol:.6,sens:1,fx:true,music:true,menu:true,touch:'auto'},o0);
 let ws=null;
 const $=id=>document.getElementById(id);
 let myId=null,casting=false,toastT;
@@ -258,8 +265,7 @@ function runSpell(i){if(spellsList[i]&&!casting&&!ui&&ws&&ws.readyState===1)ws.s
 addEventListener('resize',()=>{SZ=Math.min(48,innerWidth/11,innerHeight/10)});
 if(!cv.requestPointerLock)cv.requestPointerLock=()=>{};if(!document.exitPointerLock)document.exitPointerLock=()=>{};
 R.setPixelRatio(Math.min(devicePixelRatio,2));
-if(matchMedia('(pointer:coarse)').matches||/Android|iPhone|iPad/i.test(navigator.userAgent)){
-  document.body.classList.add('touch');let lookId=null,lx=0,ly=0,jid=null;
+{let lookId=null,lx=0,ly=0,jid=null;
   cv.addEventListener('touchstart',e=>{e.preventDefault();if(casting||ui)return;const t=e.changedTouches[0];lookId=t.identifier;lx=t.clientX;ly=t.clientY},{passive:false});
   cv.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches)if(t.identifier===lookId){me.yaw-=(t.clientX-lx)*.005*opt.sens;me.pt=Math.max(-1.5,Math.min(1.5,me.pt-(t.clientY-ly)*.005*opt.sens));lx=t.clientX;ly=t.clientY}},{passive:false});
   cv.addEventListener('touchend',e=>{for(const t of e.changedTouches)if(t.identifier===lookId)lookId=null});
@@ -269,7 +275,8 @@ if(matchMedia('(pointer:coarse)').matches||/Android|iPhone|iPad/i.test(navigator
   joy.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches)if(t.identifier===jid)jm(t)},{passive:false});
   const je=e=>{for(const t of e.changedTouches)if(t.identifier===jid){jid=null;stick.x=stick.y=0;knob.style.transform=''}};joy.addEventListener('touchend',je);joy.addEventListener('touchcancel',je);
   const bind=(id,f)=>$(id).addEventListener('pointerdown',e=>{e.preventDefault();f()});
-  bind('t-cast',()=>{if(myId!==null&&!ui)toggleCast()});bind('t-put',()=>build(false));bind('t-brk',()=>build(true));bind('t-menu',()=>showPage('m-pause',''));bind('t-grim',()=>showPage('m-grim',''));
+  bind('t-cast',()=>{if(myId!==null&&!ui)toggleCast()});const hold=(id,f)=>{let tm=null;const st=()=>{clearInterval(tm);tm=null};$(id).addEventListener('pointerdown',e=>{e.preventDefault();f();st();tm=setInterval(f,260)});['pointerup','pointercancel','pointerleave'].forEach(n=>$(id).addEventListener(n,st))};
+  hold('t-put',()=>build(false));hold('t-brk',()=>build(true));bind('t-full',()=>document.fullscreenElement?document.exitFullscreen():goFull());bind('t-menu',()=>showPage('m-pause',''));bind('t-grim',()=>showPage('m-grim',''));
   bind('t-jump',()=>keys.Space=true);['pointerup','pointercancel','pointerleave'].forEach(n=>$('t-jump').addEventListener(n,()=>keys.Space=false));
   const tg=f=>e=>{e.preventDefault();const t=e.touches[0]||e.changedTouches[0];f({clientX:t.clientX,clientY:t.clientY})};
   G.addEventListener('touchstart',tg(e=>G.onmousedown(e)),{passive:false});G.addEventListener('touchmove',tg(e=>G.onmousemove(e)),{passive:false});
@@ -297,11 +304,18 @@ snd.zap=()=>{noise(.5,.5,5000,200);tone(1800,.25,'sawtooth',.15,150)};snd.place=
 function bolt(p){burst(p,60,0xbfe0ff,4,.6,3);flash('#cdf');snd.zap();const pts=[];
   for(let i=0;i<=8;i++)pts.push(new THREE.Vector3(p[0]+(i<8?(Math.random()-.5)*2:0),p[1]+30-i*30/8,p[2]+(i<8?(Math.random()-.5)*2:0)));
   const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0xcfe6ff}));S.add(l);setTimeout(()=>S.remove(l),250)}
+// ---- mobile extras ----
+function goFull(){const e=document.documentElement;try{(e.requestFullscreen||e.webkitRequestFullscreen).call(e);if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{})}catch{}}
+function applyTouch(){const auto=matchMedia('(pointer:coarse)').matches||/Android|iPhone|iPad/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&!matchMedia('(pointer:fine)').matches);
+  document.body.classList.toggle('touch',opt.touch==='on'||(opt.touch==='auto'&&auto))}
+$('o-touch').value=opt.touch;$('o-touch').onchange=e=>{opt.touch=e.target.value;sv();applyTouch()};applyTouch();
+$('b-play').addEventListener('click',()=>{if(document.body.classList.contains('touch'))goFull()});
+['ok','bad','hurt','place','boom'].forEach(k=>{const f=snd[k],ms={ok:15,bad:50,hurt:60,place:8,boom:70}[k];snd[k]=(...a)=>{if(navigator.vibrate&&document.body.classList.contains('touch'))navigator.vibrate(ms);return f(...a)}});
 // ---- loop ----
 let T=performance.now();
 (function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-T)/1000);T=n;
   let fx=0,fz=0;if(!casting&&!ui&&playing){if(keys.KeyW)fz--;if(keys.KeyS)fz++;if(keys.KeyA)fx--;if(keys.KeyD)fx++;fx+=stick.x;fz+=stick.y}
-  const l=Math.hypot(fx,fz)||1,s=Math.sin(me.yaw),c=Math.cos(me.yaw);
+  const l=Math.max(1,Math.hypot(fx,fz)),s=Math.sin(me.yaw),c=Math.cos(me.yaw);
   const tx=(fx*c+fz*s)/l*7,tz=(-fx*s+fz*c)/l*7,k=Math.min(1,(me.ground?12:.8)*dt);
   me.v.x+=(tx-me.v.x)*k;me.v.z+=(tz-me.v.z)*k;
   if(keys.Space&&me.ground&&!casting&&!ui&&playing){me.v.y=9;me.ground=false;snd.jump()}
